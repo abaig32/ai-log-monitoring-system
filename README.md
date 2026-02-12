@@ -1,3 +1,8 @@
+# AI Log Monitoring System
+**Work in Progress** - Building an anomaly detection system for Windows Event Logs
+
+Currently implementing: Log collection and processing
+
 Folders:
 
 src/ - Contains all your Python source code files (the 8 .py files listed above)
