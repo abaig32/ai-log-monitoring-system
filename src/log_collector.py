@@ -9,10 +9,18 @@ os.makedirs("data/processed", exist_ok=True)
 os.makedirs("models", exist_ok=True)
 
 def collect_win_logs(log_type):
-    time = datetime.now() - timedelta(hours=24)
+    time = datetime.now() - timedelta(days=7)
     hand = win32evtlog.OpenEventLog(None, log_type)
     flags = win32evtlog.EVENTLOG_BACKWARDS_READ | win32evtlog.EVENTLOG_SEQUENTIAL_READ
-    events = win32evtlog.ReadEventLog(hand,flags,0)
+    all_events = []
+
+    while True:
+        events = win32evtlog.ReadEventLog(hand,flags,0)
+        if not events:
+            break
+        all_events.extend(events)
+    
+    print(f"Total events retrieved: {len(all_events)}")
 
     filename = f"data/raw/logs_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
 
@@ -32,7 +40,7 @@ def collect_win_logs(log_type):
             writer = csv.writer(f)
             writer.writerow(headers)
 
-            for event in events:
+            for event in all_events:
                 if event.TimeGenerated > time:
 
                     timestamp = event.TimeGenerated.Format()

@@ -38,7 +38,7 @@ def process_logs(filename):
 
 
 if __name__ == "__main__":
-    process_logs("data/raw/logs_20260212_182017.csv")
+    process_logs("data/raw/logs_20260212_183757.csv")
     print("Log processing complete! Check data/processed/ folder")
 
 
