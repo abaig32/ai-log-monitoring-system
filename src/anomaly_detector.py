@@ -45,14 +45,3 @@ def detector():
     df["is_anomaly"] = predictions == -1
 
     return df
-
-if __name__ == "__main__":
-    print("Running anomaly detection...")
-    result = detector()
-    
-    if isinstance(result, str):  # Error message
-        print(result)
-    else:
-        print(f"Detection complete! Found {result['is_anomaly'].sum()} anomalies out of {len(result)} hours")
-        print("\nAnomalies detected:")
-        print(result[result['is_anomaly'] == True])
