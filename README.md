@@ -38,4 +38,4 @@ README.md - Project documentation
 # AI Log Monitoring System
 **Work in Progress** - Building an anomaly detection system for Windows Event Logs
 
-Currently implementing: Model Training and Creation
+Currently implementing: Alerting
