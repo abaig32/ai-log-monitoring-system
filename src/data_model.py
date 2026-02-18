@@ -8,9 +8,9 @@ def load_model_config():
     config.read("config/config.ini")
 
     return {
-        'contamination': config['detection']['contamination'],
-        'n_estimators': config['detection']['n_estimators'],
-        'random_state': config['detection']['random_state']
+        'contamination': float(config['detection']['contamination']),
+        'n_estimators': int(config['detection']['n_estimators']),
+        'random_state': int(config['detection']['random_state'])
     }
 
 model_config = load_model_config()

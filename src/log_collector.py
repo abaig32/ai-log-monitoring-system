@@ -18,11 +18,18 @@ def get_info():
         'collection_hours': int(config['detection']['collection_hours'])
     }
 
-def collect_win_logs():
+def collect_win_logs(days=None):
     config_info = get_info()
     log_type = config_info['log_type']
-    collection_hours = config_info['collection_hours']
-    time = datetime.now() - timedelta(hours=collection_hours)
+
+    if days is not None:
+        time = datetime.now() - timedelta(days=days)
+        collection_period = f"{days} days"
+    else:
+        collection_hours = config_info['collection_hours']
+        time = datetime.now() - timedelta(hours=collection_hours)
+        collection_period = f"{collection_hours} hour(s)"
+
     hand = win32evtlog.OpenEventLog(None, log_type)
     flags = win32evtlog.EVENTLOG_BACKWARDS_READ | win32evtlog.EVENTLOG_SEQUENTIAL_READ
     all_events = []
@@ -67,7 +74,7 @@ def collect_win_logs():
     except Exception as e:
         print(f"Error collecting logs: {e}")
     
-    print(f"Collected {events_written} events from last {collection_hours} hour(s) (scanned {len(all_events)} total)")
+    print(f"Collected {events_written} events from last {collection_period} (scanned {len(all_events)} total)")
 
     
 
