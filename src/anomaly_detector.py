@@ -26,15 +26,17 @@ def get_latest_processed_file():
 def detector():
     latest_model_file = get_latest_model()
 
-    if latest_model_file == None:
-        return "There are no model files"
+    if latest_model_file is None:
+        print("There are no model files")
+        return None
     
     latest_model = load_model(latest_model_file)
 
     latest_file = get_latest_processed_file()
     
     if latest_file == None:
-        return "There are no processed files"
+        print("There are no processed files")
+        return None
 
     df = pd.read_csv(latest_file)
 

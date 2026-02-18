@@ -1,6 +1,5 @@
 from sklearn.ensemble import IsolationForest
 import joblib
-import pandas as pd 
 import configparser
 
 def load_model_config():
@@ -13,9 +12,12 @@ def load_model_config():
         'random_state': int(config['detection']['random_state'])
     }
 
-model_config = load_model_config()
-
-def build_isolation_forest(contamination=model_config['contamination'], n_estimators=model_config['n_estimators'], random_state=model_config['random_state']):
+def build_isolation_forest(contamination=None, n_estimators=None, random_state=None):
+    if contamination is None:
+        model_config = load_model_config()
+        contamination = model_config['contamination']
+        n_estimators = model_config['n_estimators']
+        random_state = model_config['random_state']
 
     isf = IsolationForest(contamination=contamination, 
                           n_estimators=n_estimators, 
@@ -25,7 +27,6 @@ def build_isolation_forest(contamination=model_config['contamination'], n_estima
 
 def train_model(model, data):
     model.fit(data)
-
     return model
 
 def save_model(model, filepath):

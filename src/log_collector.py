@@ -2,7 +2,7 @@ import win32evtlog
 import win32evtlogutil
 import csv
 import os
-from datetime import datetime,timedelta
+from datetime import datetime, timedelta
 import configparser
 
 os.makedirs("data/raw", exist_ok=True)
@@ -35,7 +35,7 @@ def collect_win_logs(days=None):
     all_events = []
 
     while True:
-        events = win32evtlog.ReadEventLog(hand,flags,0)
+        events = win32evtlog.ReadEventLog(hand, flags, 0)
         if not events:
             break
         all_events.extend(events)
@@ -45,19 +45,19 @@ def collect_win_logs(days=None):
     headers = ['Timestamp', 'Level', 'Source', 'Message']
 
     level_map = {
-    1: "ERROR",
-    2: "WARNING",
-    3: "INFO",
-    4: "INFO",
-    5: "INFO"
+        1: "ERROR",
+        2: "WARNING",
+        3: "INFO",
+        4: "INFO",
+        5: "INFO"
     }
 
+    events_written = 0
+
     try:
-        
         with open(filename, 'w', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(headers)
-            events_written = 0
 
             for event in all_events:
                 if event.TimeGenerated > time:
@@ -70,14 +70,7 @@ def collect_win_logs(days=None):
 
                     writer.writerow([timestamp, level, source, message])
 
-
     except Exception as e:
         print(f"Error collecting logs: {e}")
     
     print(f"Collected {events_written} events from last {collection_period} (scanned {len(all_events)} total)")
-
-    
-
-    
-
-    

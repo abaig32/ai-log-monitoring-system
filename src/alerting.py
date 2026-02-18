@@ -1,6 +1,5 @@
 import smtplib
 from email.mime.text import MIMEText
-from anomaly_detector import detector
 import configparser
 import requests
 
