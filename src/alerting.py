@@ -2,6 +2,8 @@ import smtplib
 from email.mime.text import MIMEText
 from anomaly_detector import detector
 import configparser
+import requests
+import json
 
 def format_anomaly_report(anomaly_df):
     anomalies = anomaly_df[anomaly_df['is_anomaly'] == True]
@@ -35,30 +37,48 @@ def load_email_config():
 
 
 def send_email_alert(anomaly_data):
-    email_config = load_email_config()
-    sender_email = email_config['sender_email']
-    receiver_email = email_config['receiver_email']
-    password = email_config['password']
-    subject = "Anomaly Detection Alert!"
-    body = format_anomaly_report(anomaly_data)
+   try:
+        email_config = load_email_config()
+        sender_email = email_config['sender_email']
+        receiver_email = email_config['receiver_email']
+        password = email_config['password']
+        subject = "Anomaly Detection Alert!"
+        body = format_anomaly_report(anomaly_data)
 
-    msg = MIMEText(body)
-    msg['From'] = sender_email
-    msg['To'] = receiver_email
-    msg['Subject'] = subject
+        msg = MIMEText(body)
+        msg['From'] = sender_email
+        msg['To'] = receiver_email
+        msg['Subject'] = subject
 
-    with smtplib.SMTP(email_config['smtp_server'], email_config['smtp_port']) as server:
-        server.starttls()
-        server.login(sender_email, password)
-        server.sendmail(sender_email, receiver_email, msg.as_string())
+        with smtplib.SMTP(email_config['smtp_server'], email_config['smtp_port']) as server:
+            server.starttls()
+            server.login(sender_email, password)
+            server.sendmail(sender_email, receiver_email, msg.as_string())
 
+        print("Email has been successfully sent!")
+   except Exception as e:
+       print(f"Email can't be sent because {e}")
+
+def load_slack_config():
+    config = configparser.ConfigParser()
+    config.read('config/config.ini')
+
+    return {'webhook_url': config['slack']['webhook_url']}
+    
+
+def send_slack_alert(anomaly_data):
     try:
-        print("Email sent successfully!")
+        slack_config = load_slack_config()
+
+        webhook_url = slack_config['webhook_url']
+        message = format_anomaly_report(anomaly_data)
+
+        payload = {"text": message}
+        response = requests.post(webhook_url, json=payload)
+
+        if response.status_code != 200:
+            raise ValueError(f"Request to Slack returned an error {response.status_code}, the response is:\n{response.text}")
+        else:
+            print("Slack alert sent successfully!")
     except Exception as e:
-        print(f"Failed to send email: {e}")
-
-
-if __name__ == "__main__":
-    anomalies = detector()
-    if anomalies is not None:
-        send_email_alert(anomalies)
+        print(f"Failed to send Slack alert: {e}")
