@@ -1,0 +1,18 @@
+[email]
+smtp_server = smtp.gmail.com
+smtp_port = 587
+sender_email = your_email@gmail.com
+password = your_app_password_here
+receiver_email = recipient@gmail.com
+
+[slack]
+webhook_url = your_slack_webhook_url_here
+
+[detection]
+collection_hours = 1
+contamination = 0.1
+n_estimators = 100
+random_state = 42
+
+[retention]
+days_to_keep = 7
