@@ -1,6 +1,17 @@
 import pandas as pd
 from datetime import datetime
-import csv
+import glob, os
+
+
+def get_latest_raw_file():
+    files = glob.glob("data/raw/*.csv")
+    
+    if not files:
+        return None
+    
+    latest_file = max(files, key=os.path.getmtime)
+    
+    return latest_file
 
 def process_logs(filename):
     df = pd.read_csv(filename)
@@ -12,8 +23,6 @@ def process_logs(filename):
     df['is_error'] = (df['Level'] == 'ERROR').astype(int)
     df['is_warning'] = (df['Level'] == 'WARNING').astype(int)
     df['is_info'] = (df['Level'] == 'INFO').astype(int)
-
-    print(df['Level'].value_counts())
 
     aggregated = df.groupby('hour_timestamp').agg({
         'Timestamp': 'count', 
@@ -35,11 +44,6 @@ def process_logs(filename):
 
     output_file_name = f"data/processed/processed_logs_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
     aggregated.to_csv(output_file_name)
-
-
-if __name__ == "__main__":
-    process_logs("data/raw/logs_20260212_183757.csv")
-    print("Log processing complete! Check data/processed/ folder")
 
 
 

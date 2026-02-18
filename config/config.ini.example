@@ -13,6 +13,8 @@ collection_hours = 1
 contamination = 0.1
 n_estimators = 100
 random_state = 42
+log_type = System
 
-[retention]
-days_to_keep = 7
+[alerts]
+enable_email_notifications = true
+enable_slack_notifications = false

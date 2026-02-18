@@ -3,7 +3,6 @@ from email.mime.text import MIMEText
 from anomaly_detector import detector
 import configparser
 import requests
-import json
 
 def format_anomaly_report(anomaly_df):
     anomalies = anomaly_df[anomaly_df['is_anomaly'] == True]

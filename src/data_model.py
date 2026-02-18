@@ -1,8 +1,21 @@
 from sklearn.ensemble import IsolationForest
 import joblib
 import pandas as pd 
+import configparser
 
-def build_isolation_forest(contamination=0.1, n_estimators=100, random_state=42):
+def load_model_config():
+    config = configparser.ConfigParser()
+    config.read("config/config.ini")
+
+    return {
+        'contamination': config['detection']['contamination'],
+        'n_estimators': config['detection']['n_estimators'],
+        'random_state': config['detection']['random_state']
+    }
+
+model_config = load_model_config()
+
+def build_isolation_forest(contamination=model_config['contamination'], n_estimators=model_config['n_estimators'], random_state=model_config['random_state']):
 
     isf = IsolationForest(contamination=contamination, 
                           n_estimators=n_estimators, 

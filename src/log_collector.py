@@ -3,13 +3,26 @@ import win32evtlogutil
 import csv
 import os
 from datetime import datetime,timedelta
+import configparser
 
 os.makedirs("data/raw", exist_ok=True)
 os.makedirs("data/processed", exist_ok=True)
 os.makedirs("models", exist_ok=True)
 
-def collect_win_logs(log_type):
-    time = datetime.now() - timedelta(days=7)
+def get_info():
+    config = configparser.ConfigParser()
+    config.read("config/config.ini")
+
+    return {
+        'log_type': config['detection']['log_type'],
+        'collection_hours': int(config['detection']['collection_hours'])
+    }
+
+def collect_win_logs():
+    config_info = get_info()
+    log_type = config_info['log_type']
+    collection_hours = config_info['collection_hours']
+    time = datetime.now() - timedelta(hours=collection_hours)
     hand = win32evtlog.OpenEventLog(None, log_type)
     flags = win32evtlog.EVENTLOG_BACKWARDS_READ | win32evtlog.EVENTLOG_SEQUENTIAL_READ
     all_events = []
@@ -19,8 +32,6 @@ def collect_win_logs(log_type):
         if not events:
             break
         all_events.extend(events)
-    
-    print(f"Total events retrieved: {len(all_events)}")
 
     filename = f"data/raw/logs_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
 
@@ -39,9 +50,11 @@ def collect_win_logs(log_type):
         with open(filename, 'w', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(headers)
+            events_written = 0
 
             for event in all_events:
                 if event.TimeGenerated > time:
+                    events_written += 1
 
                     timestamp = event.TimeGenerated.Format()
                     level = level_map.get(event.EventType, "UNKNOWN")
@@ -50,13 +63,11 @@ def collect_win_logs(log_type):
 
                     writer.writerow([timestamp, level, source, message])
 
+
     except Exception as e:
         print(f"Error collecting logs: {e}")
-
-
-if __name__ == "__main__":
-    collect_win_logs('System')
-    print("Log collection complete! Check data/raw/ folder")
+    
+    print(f"Collected {events_written} events from last {collection_hours} hour(s) (scanned {len(all_events)} total)")
 
     
 
