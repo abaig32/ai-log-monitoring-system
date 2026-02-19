@@ -1,11 +1,11 @@
-import os
+import pandas as pd
 import configparser
 
 from log_collector import collect_win_logs
 from log_processor import process_logs
 from anomaly_detector import detector
 from alerting import send_email_alert, send_slack_alert
-from utils import get_latest_raw_file
+from utils import get_latest_raw_file, cleanup_old_files, cleanup_old_models
 
 
 def get_alert_config():
@@ -34,6 +34,17 @@ def main():
         collect_win_logs()
     except Exception as e:
         print(f"ERROR: Logs could not be collected: {e}\n")
+        return
+
+    latest_raw = get_latest_raw_file()
+    if latest_raw is None:
+        print("WARNING: No raw log files found.\n")
+        return
+
+    # Check if the raw file is empty
+    import pandas as pd
+    if pd.read_csv(latest_raw).empty:
+        print("WARNING: No events collected in this time window. Try again later or increase collection_hours in config.ini.\n")
         return
 
     # Step 2: Get the raw file just written by the collector
@@ -87,6 +98,11 @@ def main():
     except Exception as e:
         print(f"ERROR: Alerts couldn't be sent: {e}\n")
         return
+
+    # Delete Excessive Log and Model Files
+    cleanup_old_files("data/raw")
+    cleanup_old_files("data/processed")
+    cleanup_old_models()
 
     print("\n" + "="*50)
     print("Detection Cycle Complete!")

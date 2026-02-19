@@ -51,3 +51,30 @@ def get_latest_raw_file():
     latest_file = max(files, key=os.path.getmtime)
 
     return latest_file
+
+
+def cleanup_old_files(folder, keep=10):
+    """
+    Delete old CSV files in a folder, keeping only the most recent ones.
+
+    Args:
+        folder (str): Path to the folder to clean up.
+        keep (int): Number of most recent files to keep. Defaults to 10.
+    """
+    files = sorted(glob.glob(f"{folder}/*.csv"), key=os.path.getmtime, reverse=True)
+
+    for file in files[keep:]:
+        os.remove(file)
+
+
+def cleanup_old_models(keep=3):
+    """
+    Delete old model files, keeping only the most recent ones.
+
+    Args:
+        keep (int): Number of most recent models to keep. Defaults to 3.
+    """
+    files = sorted(glob.glob("models/*.joblib"), key=os.path.getmtime, reverse=True)
+
+    for file in files[keep:]:
+        os.remove(file)
