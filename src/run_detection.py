@@ -1,7 +1,9 @@
-from log_processor import process_logs, get_latest_raw_file
+from log_processor import process_logs
 from log_collector import collect_win_logs
 from anomaly_detector import detector
 from alerting import send_email_alert, send_slack_alert
+from utils import get_latest_raw_file
+import os
 import configparser
 
 def get_alert_config():
@@ -22,6 +24,7 @@ def main():
     print("[1/5] Collecting Windows Logs...")
     try:
         collect_win_logs()
+        print("[DEBUG] Log collection done")
     except Exception as e:
         print(f"ERROR: Logs could not be collected: {e}\n")
         return
@@ -38,6 +41,8 @@ def main():
     print("\n[3/5] Processing logs...")
     try:
         process_logs(latest_raw)
+        import pandas as pd
+        df_check = pd.read_csv("data/processed/" + sorted(os.listdir("data/processed"))[-1])
     except Exception as e:
         print(f"ERROR: Logs could not be processed: {e}\n")
         return
@@ -48,6 +53,9 @@ def main():
         anomaly_data = detector()
         num_anomalies = anomaly_data['is_anomaly'].sum()
         print(f"Found {num_anomalies} anomalies in {len(anomaly_data)} hour(s)")
+
+        if num_anomalies == 0:
+            print("There are no amomalies to report!")
     except Exception as e:
         print(f"ERROR: Anomalies couldn't be detected: {e}\n")
         return

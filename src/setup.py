@@ -1,20 +1,7 @@
-import glob
-import os
-
 from log_collector import collect_win_logs
-from log_processor import process_logs, get_latest_raw_file
+from log_processor import process_logs
 from train_model import finished_model
-
-
-def check_existing_model():
-    files = glob.glob("models/*.joblib")
-
-    if not files:
-        return None
-
-    latest_model = max(files, key=os.path.getmtime)
-
-    return latest_model
+from utils import get_latest_model, get_latest_raw_file
 
 
 def run_initial_setup():
@@ -29,7 +16,7 @@ def main():
     print("INITIAL SETUP - MODEL TRAINING")
     print("="*50 + "\n")
 
-    existing_model = check_existing_model()
+    existing_model = get_latest_model()
 
     if existing_model:
         print(f"Found existing model: {existing_model}")

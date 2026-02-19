@@ -1,27 +1,6 @@
 import pandas as pd 
-import glob
-import os 
 from data_model import load_model
-
-def get_latest_model():
-    files = glob.glob("models/*.joblib")
-
-    if not files:
-        return None
-    
-    latest_file = max(files, key=os.path.getmtime)
-
-    return latest_file
-
-def get_latest_processed_file():
-    files = glob.glob("data/processed/*.csv")
-    
-    if not files:
-        return None
-    
-    latest_file = max(files, key=os.path.getmtime)
-    
-    return latest_file
+from utils import get_latest_model, get_latest_processed_file
 
 def detector():
     latest_model_file = get_latest_model()

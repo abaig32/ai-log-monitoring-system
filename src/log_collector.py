@@ -2,7 +2,7 @@ import win32evtlog
 import win32evtlogutil
 import csv
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import configparser
 
 os.makedirs("data/raw", exist_ok=True)
@@ -59,6 +59,9 @@ def collect_win_logs(days=None):
             writer = csv.writer(f)
             writer.writerow(headers)
 
+            print(f"[DEBUG] First event timestamp: {all_events[0].TimeGenerated}")
+            print(f"[DEBUG] Cutoff time: {time}")
+
             for event in all_events:
                 if event.TimeGenerated > time:
                     events_written += 1
@@ -72,5 +75,5 @@ def collect_win_logs(days=None):
 
     except Exception as e:
         print(f"Error collecting logs: {e}")
-    
+
     print(f"Collected {events_written} events from last {collection_period} (scanned {len(all_events)} total)")

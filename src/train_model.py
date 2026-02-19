@@ -1,7 +1,7 @@
 from data_model import build_isolation_forest, train_model, save_model
 import pandas as pd 
 from datetime import datetime
-from anomaly_detector import get_latest_processed_file
+from utils import get_latest_processed_file
 
 def finished_model():
     file = get_latest_processed_file()

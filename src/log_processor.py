@@ -1,18 +1,5 @@
 import pandas as pd
 from datetime import datetime
-import glob
-import os
-
-
-def get_latest_raw_file():
-    files = glob.glob("data/raw/*.csv")
-    
-    if not files:
-        return None
-    
-    latest_file = max(files, key=os.path.getmtime)
-    
-    return latest_file
 
 def process_logs(filename):
     df = pd.read_csv(filename)
@@ -43,6 +30,7 @@ def process_logs(filename):
     })
 
     output_file_name = f"data/processed/processed_logs_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
-    aggregated.to_csv(output_file_name)
+    aggregated = aggregated.reset_index()
+    aggregated.to_csv(output_file_name, index=False)
     
     return output_file_name
