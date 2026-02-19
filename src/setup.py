@@ -5,6 +5,11 @@ from utils import get_latest_model, get_latest_raw_file
 
 
 def run_initial_setup():
+    """
+    Run the full setup pipeline in sequence without printed steps.
+    Collects 7 days of logs, processes them, and trains the model.
+    Can be used as a programmatic entry point (e.g. from the Flask API).
+    """
     collect_win_logs(days=7)
     latest_raw_file = get_latest_raw_file()
     process_logs(latest_raw_file)
@@ -12,10 +17,15 @@ def run_initial_setup():
 
 
 def main():
+    """
+    Interactive setup entry point. Checks for an existing model and
+    prompts the user before retraining if one is found.
+    """
     print("\n" + "="*50)
     print("INITIAL SETUP - MODEL TRAINING")
     print("="*50 + "\n")
 
+    # Check if a trained model already exists before proceeding
     existing_model = get_latest_model()
 
     if existing_model:
@@ -32,7 +42,7 @@ def main():
     print("[1/4] Collecting 7 days of logs...")
     collect_win_logs(days=7)
 
-    # Step 2: Get latest
+    # Step 2: Get latest raw file to pass into processing
     print("\n[2/4] Finding latest raw file...")
     latest_raw_file = get_latest_raw_file()
 

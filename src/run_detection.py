@@ -1,53 +1,58 @@
-from log_processor import process_logs
-from log_collector import collect_win_logs
-from anomaly_detector import detector
-from alerting import send_email_alert, send_slack_alert
-from utils import get_latest_raw_file
 import os
 import configparser
 
+from log_collector import collect_win_logs
+from log_processor import process_logs
+from anomaly_detector import detector
+from alerting import send_email_alert, send_slack_alert
+from utils import get_latest_raw_file
+
+
 def get_alert_config():
+    """Read alert notification settings from config file."""
     config = configparser.ConfigParser()
     config.read("config/config.ini")
 
     return {
-        'enable_email': config.getboolean('alerts','enable_email_notifications'),
-        'enable_slack': config.getboolean('alerts','enable_slack_notifications')
+        'enable_email': config.getboolean('alerts', 'enable_email_notifications'),
+        'enable_slack': config.getboolean('alerts', 'enable_slack_notifications')
     }
 
+
 def main():
+    """
+    Run a full detection cycle: collect logs, process them, detect anomalies,
+    and send alerts if any anomalies are found.
+    """
     print("\n" + "="*50)
     print("AI LOG MONITORING SYSTEM - ANOMALY DETECTION")
     print("="*50 + "\n")
-    
-    # Collect logs
+
+    # Step 1: Collect logs from Windows Event Log
     print("[1/5] Collecting Windows Logs...")
     try:
         collect_win_logs()
-        print("[DEBUG] Log collection done")
     except Exception as e:
         print(f"ERROR: Logs could not be collected: {e}\n")
         return
 
-    # Get latest raw file
+    # Step 2: Get the raw file just written by the collector
     print("\n[2/5] Fetching latest raw data file...")
     try:
         latest_raw = get_latest_raw_file()
     except Exception as e:
         print(f"ERROR: Latest raw data file couldn't be fetched: {e}\n")
         return
-    
-    # Process logs
+
+    # Step 3: Aggregate raw events into hourly feature data
     print("\n[3/5] Processing logs...")
     try:
         process_logs(latest_raw)
-        import pandas as pd
-        df_check = pd.read_csv("data/processed/" + sorted(os.listdir("data/processed"))[-1])
     except Exception as e:
         print(f"ERROR: Logs could not be processed: {e}\n")
         return
 
-    # Detect anomalies
+    # Step 4: Run Isolation Forest on the processed hourly features
     print("\n[4/5] Running anomaly detection...")
     try:
         anomaly_data = detector()
@@ -55,16 +60,16 @@ def main():
         print(f"Found {num_anomalies} anomalies in {len(anomaly_data)} hour(s)")
 
         if num_anomalies == 0:
-            print("There are no amomalies to report!")
+            print("There are no anomalies to report!")
     except Exception as e:
         print(f"ERROR: Anomalies couldn't be detected: {e}\n")
         return
 
-    # Send alerts
+    # Step 5: Send alerts via enabled channels if anomalies were found
     print("\n[5/5] Sending alerts...")
     try:
         alert_config = get_alert_config()
-        
+
         if num_anomalies > 0:
             if alert_config['enable_email']:
                 send_email_alert(anomaly_data)
@@ -73,16 +78,16 @@ def main():
             if alert_config['enable_slack']:
                 send_slack_alert(anomaly_data)
                 print("Slack alert sent successfully")
-            
+
             if not alert_config['enable_email'] and not alert_config['enable_slack']:
                 print("WARNING: Anomalies detected but no alerts enabled")
         else:
             print("No anomalies detected - no alerts sent")
-            
-    except Exception as e: 
+
+    except Exception as e:
         print(f"ERROR: Alerts couldn't be sent: {e}\n")
         return
-    
+
     print("\n" + "="*50)
     print("Detection Cycle Complete!")
     print("="*50 + "\n")

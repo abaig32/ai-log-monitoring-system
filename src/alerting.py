@@ -3,28 +3,40 @@ from email.mime.text import MIMEText
 import configparser
 import requests
 
+
 def format_anomaly_report(anomaly_df):
+    """
+    Format anomaly detection results into a human-readable text report.
+
+    Args:
+        anomaly_df (DataFrame): Detection results with is_anomaly column.
+
+    Returns:
+        str: Formatted report listing each anomalous hour and its metrics.
+    """
     anomalies = anomaly_df[anomaly_df['is_anomaly'] == True]
-    
+
     if len(anomalies) == 0:
         return "No anomalies detected."
-    
+
     report = f"Found {len(anomalies)} anomalies out of {len(anomaly_df)} hours:\n\n"
-    
+
+    # Build a summary block for each anomalous hour
     for idx, row in anomalies.iterrows():
         report += f"Time: {row['hour_timestamp']}\n"
         report += f"  Total Events: {row['total_events']}\n"
         report += f"  Errors: {row['error_count']}\n"
         report += f"  Warnings: {row['warning_count']}\n"
         report += f"  Error Rate: {row['error_rate']:.2%}\n\n"
-    
+
     return report
 
 
 def load_email_config():
+    """Read email credentials and SMTP settings from config file."""
     config = configparser.ConfigParser()
     config.read('config/config.ini')
-    
+
     return {
         'smtp_server': config['email']['smtp_server'],
         'smtp_port': int(config['email']['smtp_port']),
@@ -35,7 +47,13 @@ def load_email_config():
 
 
 def send_email_alert(anomaly_data):
-   try:
+    """
+    Send an anomaly report via email using SMTP.
+
+    Args:
+        anomaly_data (DataFrame): Detection results to include in the email body.
+    """
+    try:
         email_config = load_email_config()
         sender_email = email_config['sender_email']
         receiver_email = email_config['receiver_email']
@@ -54,20 +72,27 @@ def send_email_alert(anomaly_data):
             server.sendmail(sender_email, receiver_email, msg.as_string())
 
         print("Email has been successfully sent!")
-   except Exception as e:
-       print(f"Email can't be sent because {e}")
+    except Exception as e:
+        print(f"Email can't be sent because {e}")
+
 
 def load_slack_config():
+    """Read Slack webhook URL from config file."""
     config = configparser.ConfigParser()
     config.read('config/config.ini')
 
     return {'webhook_url': config['slack']['webhook_url']}
-    
+
 
 def send_slack_alert(anomaly_data):
+    """
+    Send an anomaly report to a Slack channel via webhook.
+
+    Args:
+        anomaly_data (DataFrame): Detection results to include in the Slack message.
+    """
     try:
         slack_config = load_slack_config()
-
         webhook_url = slack_config['webhook_url']
         message = format_anomaly_report(anomaly_data)
 

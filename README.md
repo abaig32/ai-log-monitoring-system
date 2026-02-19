@@ -38,4 +38,4 @@ README.md - Project documentation
 # AI Log Monitoring System
 **Work in Progress** - Building an anomaly detection system for Windows Event Logs
 
-Currently implementing: Full detection run and flask API
+Currently implementing: Commenting and Flask API 
